@@ -7,17 +7,17 @@
     VHOST_NAME: vhost_on_83
 
   tasks:
-  - name: install httpd
+  - name: install Apache
     yum: name=httpd state=latest
 
   - name: start Apache service
     service: name=httpd state=started enabled=yes
 
-  - name: create http configuration file
+  - name: create Apache Virtual-Host configuration file
     template: src=virtual-host.j2 dest=/etc/httpd/conf.d/{{ VHOST_NAME }}.conf
     notify: restart httpd
 
-  - name: enable HTTP service on firewall
+  - name: Allow port on firewall
     firewalld:
       port: "{{ HTTP_PORT }}/tcp"
       permanent: yes
@@ -25,13 +25,13 @@
     notify:
       - restart firewalld
 
-  - name: create virtual host directory
+  - name: Create Virtual-Host directory
     file:
       path: /var/www/{{ VHOST_NAME }}
       state: directory
       mode: 0755
 
-  - name: crate index
+  - name: Create index.html for Virtual-Host
     copy:
       dest: "/var/www/{{ VHOST_NAME }}/index.html"
       content: This response is from port {{ HTTP_PORT }}
