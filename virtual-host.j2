@@ -1,0 +1,6 @@
+Listen {{ HTTP_PORT }}
+
+<VirtualHost *:{{ HTTP_PORT  }}>
+        DocumentRoot "/var/www/{{ VHOST_NAME }}"
+        ErrorLog logs/{{ VHOST_NAME  }}-error_log
+</VirtualHost>
