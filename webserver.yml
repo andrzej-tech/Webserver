@@ -1,0 +1,44 @@
+---
+
+- name: install and configure Apache Webserver
+  hosts: everything
+  vars:
+    HTTP_PORT: 83
+    VHOST_NAME: vhost_on_83
+
+  tasks:
+  - name: install httpd
+    yum: name=httpd state=latest
+
+  - name: start Apache service
+    service: name=httpd state=started enabled=yes
+
+  - name: create http configuration file
+    template: src=virtual-host.j2 dest=/etc/httpd/conf.d/{{ VHOST_NAME }}.conf
+    notify: restart httpd
+
+  - name: enable HTTP service on firewall
+    firewalld:
+      port: "{{ HTTP_PORT }}/tcp"
+      permanent: yes
+      state: enabled
+    notify:
+      - restart firewalld
+
+  - name: create virtual host directory
+    file:
+      path: /var/www/{{ VHOST_NAME }}
+      state: directory
+      mode: 0755
+
+  - name: crate index
+    copy:
+      dest: "/var/www/{{ VHOST_NAME }}/index.html"
+      content: This response is from port {{ HTTP_PORT }}
+
+  handlers:
+  - name: restart httpd
+    service: name=httpd state=restarted
+
+  - name: restart firewalld
+    service: name=firewalld state=restarted
